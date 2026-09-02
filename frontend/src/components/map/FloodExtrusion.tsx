@@ -6,83 +6,71 @@ interface FloodExtrusionProps {
   map: maplibregl.Map | null;
 }
 
+const BUILDINGS = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      geometry: { type: 'Polygon', coordinates: [[[72.818, 18.922], [72.822, 18.922], [72.822, 18.926], [72.818, 18.926], [72.818, 18.922]]] },
+      properties: { height: 45, base_height: 0, risk: 'High', color: '#f97316' },
+    },
+    {
+      type: 'Feature',
+      geometry: { type: 'Polygon', coordinates: [[[72.824, 18.923], [72.828, 18.923], [72.828, 18.927], [72.824, 18.927], [72.824, 18.923]]] },
+      properties: { height: 75, base_height: 0, risk: 'Extreme', color: '#ef4444' },
+    },
+    {
+      type: 'Feature',
+      geometry: { type: 'Polygon', coordinates: [[[72.820, 18.928], [72.825, 18.928], [72.825, 18.932], [72.820, 18.932], [72.820, 18.928]]] },
+      properties: { height: 60, base_height: 0, risk: 'Moderate', color: '#eab308' },
+    },
+    {
+      type: 'Feature',
+      geometry: { type: 'Polygon', coordinates: [[[72.829, 18.929], [72.833, 18.929], [72.833, 18.933], [72.829, 18.933], [72.829, 18.929]]] },
+      properties: { height: 90, base_height: 0, risk: 'Extreme', color: '#ef4444' },
+    },
+    {
+      type: 'Feature',
+      geometry: { type: 'Polygon', coordinates: [[[72.835, 18.930], [72.840, 18.930], [72.840, 18.934], [72.835, 18.934], [72.835, 18.930]]] },
+      properties: { height: 55, base_height: 0, risk: 'High', color: '#8b5cf6' },
+    },
+  ],
+};
+
 export const FloodExtrusion: React.FC<FloodExtrusionProps> = ({ map }) => {
   useEffect(() => {
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
 
-    const sourceId = 'flood-buildings-src';
-    const fillLayerId = 'flood-buildings-layer';
+    const srcId = 'flood-src';
+    const layerId = 'flood-extrusion';
 
-    // Sample 3D building polygons for coastal flood simulation (e.g. Mumbai Coastal / Nariman Point area)
-    const buildingFeatures = {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [[[72.818, 18.922], [72.822, 18.922], [72.822, 18.926], [72.818, 18.926], [72.818, 18.922]]]
-          },
-          properties: { height: 45, base_height: 0, risk: 'High', flood_level: 2.1 }
-        },
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [[[72.824, 18.923], [72.828, 18.923], [72.828, 18.927], [72.824, 18.927], [72.824, 18.923]]]
-          },
-          properties: { height: 75, base_height: 0, risk: 'Extreme', flood_level: 2.8 }
-        },
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [[[72.820, 18.928], [72.825, 18.928], [72.825, 18.932], [72.820, 18.932], [72.820, 18.928]]]
-          },
-          properties: { height: 60, base_height: 0, risk: 'Moderate', flood_level: 1.2 }
-        },
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [[[72.829, 18.929], [72.833, 18.929], [72.833, 18.933], [72.829, 18.933], [72.829, 18.929]]]
-          },
-          properties: { height: 90, base_height: 0, risk: 'Extreme', flood_level: 3.2 }
-        }
-      ]
-    };
-
-    if (!map.getSource(sourceId)) {
-      map.addSource(sourceId, {
+    if (!map.getSource(srcId)) {
+      map.addSource(srcId, {
         type: 'geojson',
-        data: buildingFeatures as unknown as maplibregl.GeoJSONSourceSpecification['data']
+        data: BUILDINGS as unknown as maplibregl.GeoJSONSourceSpecification['data'],
       });
     }
 
-    if (!map.getLayer(fillLayerId)) {
+    if (!map.getLayer(layerId)) {
       map.addLayer({
-        id: fillLayerId,
+        id: layerId,
         type: 'fill-extrusion',
-        source: sourceId,
+        source: srcId,
         paint: {
-          'fill-extrusion-color': [
-            'match',
-            ['get', 'risk'],
-            'Extreme', '#ef4444',
-            'High', '#f97316',
-            'Moderate', '#eab308',
-            '#3b82f6'
-          ],
+          'fill-extrusion-color': ['get', 'color'],
           'fill-extrusion-height': ['get', 'height'],
           'fill-extrusion-base': ['get', 'base_height'],
-          'fill-extrusion-opacity': 0.85
-        }
+          'fill-extrusion-opacity': 0.85,
+        },
       });
     }
 
+    // Fly to Mumbai coastal zone to show the extrusions
+    map.flyTo({ center: [72.826, 18.928], zoom: 14, pitch: 60, bearing: -20, duration: 2000 });
+
     return () => {
-      if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId);
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(srcId)) map.removeSource(srcId);
     };
   }, [map]);
 

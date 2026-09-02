@@ -1,136 +1,163 @@
 'use client';
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Thermometer, Sprout } from 'lucide-react';
-import { SkewTDiagram } from '../charts/SkewTDiagram';
+import { Area, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Thermometer, Sprout, Navigation2, MapPin, AlertTriangle, Plane } from 'lucide-react';
 
-interface FlyToParams {
-  location_name?: string;
-  lat?: number;
-  lon?: number;
+interface Props {
+  toolCall: { name: string; parameters: Record<string, unknown> };
 }
 
-interface RenderLayerParams {
-  layer_type?: string;
-}
+type FlyParams   = { location_name?: string; lat?: number; lon?: number };
+type LayerParams = { layer_type?: string };
+type ChartData   = { years?: number[]; temps?: number[]; recommendation?: string; soil_moisture?: string; degree_days?: number; aqi?: number; status?: string; pm25?: number; pm10?: number; no2?: number; cape?: number; cin?: number; lifted_index?: number; flight_level?: string; turbulence_risk?: string };
+type ChartParams = { chart_type?: string; title?: string; location?: string; data?: ChartData };
 
-interface GenerateChartParams {
-  chart_type?: string;
-  title?: string;
-  location?: string;
-  data?: {
-    years?: number[];
-    temps?: number[];
-    recommendation?: string;
-    soil_moisture?: string;
-    degree_days?: number;
-    aqi?: number;
-    status?: string;
-    pm25?: number;
-    pm10?: number;
-    no2?: number;
-    cape?: number;
-    cin?: number;
-    lifted_index?: number;
-    flight_level?: string;
-    turbulence_risk?: string;
-  };
-}
+const LAYER_LABELS: Record<string, string> = {
+  wind_particles: 'Wind Field',      heatmap_temp: 'Temperature Map',
+  heatmap_precip: 'Precipitation',   flood_extrusion: '3D Flood Layer',
+  spaghetti_plots: 'Cyclone Tracks', aqi_circles: 'AQI Stations',
+  pressure_isobars: 'Pressure Isobars', alert_zones: 'Alert Zones',
+};
 
-interface ToolCallCardProps {
-  toolCall: {
-    name: string;
-    parameters: Record<string, unknown>;
-  };
-}
+// Shared card wrapper
+const Card: React.FC<{ accent: string; children: React.ReactNode }> = ({ accent, children }) => (
+  <div style={{
+    background: 'var(--glass-2)', border: '1px solid var(--glass-border)',
+    borderLeft: `3px solid ${accent}`,
+    borderRadius: 12, padding: '10px 12px', fontSize: 12,
+    marginTop: 4,
+  }}>{children}</div>
+);
 
-export const ToolCallCard: React.FC<ToolCallCardProps> = ({ toolCall }) => {
+const StatBox: React.FC<{ label: string; value: string | number | undefined; color?: string }> = ({ label, value, color }) => (
+  <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 8, padding: '8px 10px', textAlign: 'center', border: '1px solid var(--glass-border)' }}>
+    <p style={{ fontSize: 9.5, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</p>
+    <p style={{ fontSize: 15, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", color: color ?? 'var(--text-primary)' }}>{value ?? '—'}</p>
+  </div>
+);
+
+export const ToolCallCard: React.FC<Props> = ({ toolCall }) => {
   const { name, parameters } = toolCall;
 
   if (name === 'flyTo') {
-    const params = parameters as FlyToParams;
+    const p = parameters as FlyParams;
     return (
-      <div className="mt-2 p-2 bg-blue-950/40 border border-blue-500/30 rounded-lg text-xs text-blue-300 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
-        Flew camera to <strong className="text-white">{params.location_name || 'Location'}</strong> (Lat {params.lat}, Lon {params.lon})
-      </div>
+      <Card accent="var(--blue)">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Navigation2 style={{ width: 13, height: 13, color: 'var(--blue)', flexShrink: 0 }} />
+          <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
+            Flew to{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>{p.location_name ?? 'location'}</strong>
+            {p.lat && <span style={{ color: 'var(--text-tertiary)', fontFamily: 'monospace', fontSize: 10.5, marginLeft: 6 }}>{p.lat.toFixed(2)}°N {p.lon?.toFixed(2)}°E</span>}
+          </span>
+        </div>
+      </Card>
     );
   }
 
   if (name === 'renderMapLayer') {
-    const params = parameters as RenderLayerParams;
+    const p = parameters as LayerParams;
+    const label = LAYER_LABELS[p.layer_type ?? ''] ?? p.layer_type;
     return (
-      <div className="mt-2 p-2 bg-cyan-950/40 border border-cyan-500/30 rounded-lg text-xs text-cyan-300 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-cyan-400" />
-        Activated WebGL Layer: <strong className="text-white uppercase">{(params.layer_type || 'layer').replace('_', ' ')}</strong>
-      </div>
+      <Card accent="var(--teal)">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <MapPin style={{ width: 12, height: 12, color: 'var(--teal)', flexShrink: 0 }} />
+          <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
+            Layer activated: <strong style={{ color: 'var(--text-primary)' }}>{label}</strong>
+          </span>
+        </div>
+      </Card>
     );
   }
 
   if (name === 'generateChart') {
-    const params = parameters as GenerateChartParams;
-    const { chart_type, title, location, data = {} } = params;
+    const p = parameters as ChartParams;
+    const d = p.data ?? {};
 
-    if (chart_type === 'climate_trend') {
-      const chartData = data.years?.map((y: number, idx: number) => ({
-        year: y,
-        temp: data.temps?.[idx]
-      })) || [];
-
+    if (p.chart_type === 'climate_trend') {
+      const chartData = d.years?.map((y, i) => ({ year: y, temp: d.temps?.[i] })) ?? [];
       return (
-        <div className="mt-3 p-3 bg-slate-900/80 border border-slate-700 rounded-xl text-xs">
-          <div className="flex items-center gap-2 mb-2 text-amber-400 font-semibold">
-            <Thermometer className="w-4 h-4" />
-            {title || `Climate Trend — ${location}`}
+        <Card accent="var(--orange)">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+            <Thermometer style={{ width: 13, height: 13, color: 'var(--orange)' }} />
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>{p.title ?? 'Climate Trend'}</span>
           </div>
-          <div className="h-36 w-full">
+          <div style={{ height: 100 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <XAxis dataKey="year" stroke="#94a3b8" fontSize={10} />
-                <YAxis stroke="#94a3b8" fontSize={10} domain={['auto', 'auto']} />
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }} />
-                <Line type="monotone" dataKey="temp" stroke="#f97316" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="og" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="var(--orange)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--orange)" stopOpacity={0}   />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="year" stroke="var(--text-tertiary)" fontSize={9} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--text-tertiary)" fontSize={9} tickLine={false} axisLine={false} width={24} domain={['auto', 'auto']} />
+                <Tooltip contentStyle={{ background: 'var(--glass-2)', border: '1px solid var(--glass-border-md)', borderRadius: 8, fontSize: 11 }} labelStyle={{ color: 'var(--text-secondary)' }} itemStyle={{ color: 'var(--orange)' }} />
+                <Area type="monotone" dataKey="temp" stroke="var(--orange)" strokeWidth={1.5} fill="url(#og)" dot={false} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
       );
     }
 
-    if (chart_type === 'crop_advisory') {
+    if (p.chart_type === 'crop_advisory') {
       return (
-        <div className="mt-3 p-3 bg-emerald-950/60 border border-emerald-500/30 rounded-xl text-xs text-emerald-200">
-          <div className="flex items-center gap-2 mb-1 text-emerald-400 font-semibold text-sm">
-            <Sprout className="w-4 h-4" />
-            Smart Agro-Meteorological Advisory
+        <Card accent="var(--green)">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <Sprout style={{ width: 13, height: 13, color: 'var(--green)' }} />
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>Crop Advisory</span>
           </div>
-          <p className="mt-1 text-slate-300">{data.recommendation}</p>
-          <div className="mt-2 grid grid-cols-2 gap-2 text-slate-400">
-            <div>Soil Moisture: <span className="text-white">{data.soil_moisture}</span></div>
-            <div>Growing Degree Days: <span className="text-white">{data.degree_days}</span></div>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: 10 }}>{d.recommendation}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            <StatBox label="Soil Moisture" value={d.soil_moisture} color="var(--green)" />
+            <StatBox label="Degree Days"   value={d.degree_days}  color="var(--yellow)" />
           </div>
-        </div>
+        </Card>
       );
     }
 
-    if (chart_type === 'skew_t') {
-      return <SkewTDiagram location={location} data={data} />;
+    if (p.chart_type === 'aqi_breakdown') {
+      const ac = (d.aqi ?? 0) > 300 ? 'var(--purple)' : (d.aqi ?? 0) > 200 ? 'var(--red)' : (d.aqi ?? 0) > 100 ? 'var(--orange)' : 'var(--green)';
+      return (
+        <Card accent={ac}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>Air Quality · {p.location}</span>
+            <span style={{ fontSize: 18, fontWeight: 800, color: ac, fontFamily: 'monospace' }}>{d.aqi}</span>
+          </div>
+          <p style={{ fontSize: 11, color: ac, fontWeight: 500, marginBottom: 8 }}>{d.status}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+            <StatBox label="PM2.5" value={d.pm25} color={ac} />
+            <StatBox label="PM10"  value={d.pm10}  color={ac} />
+            <StatBox label="NO₂"   value={d.no2}   color={ac} />
+          </div>
+        </Card>
+      );
     }
 
-    if (chart_type === 'aqi_breakdown') {
+    if (p.chart_type === 'skew_t') {
       return (
-        <div className="mt-3 p-3 bg-purple-950/60 border border-purple-500/30 rounded-xl text-xs text-purple-200">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-semibold text-purple-300">Air Quality Index — {location}</span>
-            <span className="px-2 py-0.5 rounded bg-purple-500/30 text-purple-200 font-bold">{data.aqi || 342} AQI</span>
+        <Card accent="var(--blue)">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Plane style={{ width: 13, height: 13, color: 'var(--blue)' }} />
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>Aero-Met · {p.location}</span>
+            </div>
+            {d.flight_level && <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: 'var(--yellow)', background: 'var(--yellow-tint)', border: '1px solid var(--yellow-ring)', padding: '1px 7px', borderRadius: 99 }}>{d.flight_level}</span>}
           </div>
-          <p className="mt-1 text-slate-300">{data.status || 'Hazardous / Severe Air Quality'}</p>
-          <div className="mt-2 grid grid-cols-3 gap-2 text-center text-slate-400 bg-purple-950/40 p-2 rounded-lg">
-            <div>PM2.5: <span className="text-white font-bold">{data.pm25 || 184}</span></div>
-            <div>PM10: <span className="text-white font-bold">{data.pm10 || 312}</span></div>
-            <div>NO2: <span className="text-white font-bold">{data.no2 || 62}</span></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, marginBottom: d.turbulence_risk ? 8 : 0 }}>
+            <StatBox label="CAPE" value={d.cape} color="var(--yellow)" />
+            <StatBox label="CIN"  value={d.cin}  color="var(--blue)"   />
+            <StatBox label="LI"   value={d.lifted_index} color="var(--red)" />
           </div>
-        </div>
+          {d.turbulence_risk && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', background: 'var(--yellow-tint)', border: '1px solid var(--yellow-ring)', borderRadius: 8, marginTop: 2 }}>
+              <AlertTriangle style={{ width: 11, height: 11, color: 'var(--yellow)', flexShrink: 0 }} />
+              <span style={{ fontSize: 11.5, color: 'var(--yellow)' }}>Turbulence: {d.turbulence_risk}</span>
+            </div>
+          )}
+        </Card>
       );
     }
   }

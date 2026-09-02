@@ -1,74 +1,76 @@
 'use client';
 import React, { useState } from 'react';
-import { MousePointerClick, Sprout, Check, Trash2 } from 'lucide-react';
+import { MousePointerClick, Sprout, Check, X } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
-export const PolygonDraw: React.FC = () => {
+import * as maplibregl from 'maplibre-gl';
+
+export interface PolygonDrawProps {
+  map?: maplibregl.Map | null;
+}
+
+// Re-export VoiceButton as a no-op (voice logic is inlined in ChatInput)
+export const VoiceButton: React.FC<{ onTranscript?: (t: string) => void }> = () => null;
+
+export const PolygonDraw: React.FC<PolygonDrawProps> = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const { addMessage } = useAppStore();
 
-  const handleStartDraw = () => {
-    setIsDrawing(true);
-  };
-
-  const handleCancelDraw = () => {
-    setIsDrawing(false);
-  };
-
-  const handleCompleteDraw = () => {
+  const handleComplete = () => {
     setIsDrawing(false);
     addMessage({
       sender: 'assistant',
-      text: 'Captured custom field boundary geometry. High-resolution WRF model data sliced for your field coordinates.',
-      toolCalls: [
-        {
-          name: 'generateChart',
-          parameters: {
-            chart_type: 'crop_advisory',
-            title: 'Field-Specific Crop Weather Advisory',
-            location: 'Selected Field Plot',
-            data: {
-              recommendation: 'Field boundary analyzed (1.4 hectares). Optimal soil moisture retention detected. Safe window for nitrogen fertilization open for next 48 hours.',
-              soil_moisture: '72% (High)',
-              degree_days: 158
-            }
-          }
-        }
-      ]
+      text: 'Field boundary captured (~1.4 ha). Running WRF crop advisory for selected coordinates.',
+      toolCalls: [{
+        name: 'generateChart',
+        parameters: {
+          chart_type: 'crop_advisory',
+          title: 'Field Advisory',
+          location: 'Selected Field',
+          data: {
+            recommendation: 'Safe fertilization window open for 48h before incoming precipitation. Soil moisture elevated — delay irrigation.',
+            soil_moisture: '72%',
+            degree_days: 158,
+          },
+        },
+      }],
     });
   };
 
+  if (!isDrawing) {
+    return (
+      <button
+        onClick={() => setIsDrawing(true)}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          padding: '5px 12px', borderRadius: 20,
+          fontSize: 12, fontWeight: 500,
+          background: 'rgba(48,209,88,0.12)',
+          border: '1px solid rgba(48,209,88,0.30)',
+          color: '#30D158',
+          cursor: 'pointer',
+        }}
+      >
+        <Sprout style={{ width: 12, height: 12 }} />
+        Draw Field
+      </button>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      {!isDrawing ? (
-        <button
-          onClick={handleStartDraw}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900/80 transition-all shadow-sm"
-          title="Draw your farm field on the map to get a field-specific crop advisory"
-        >
-          <Sprout className="w-3.5 h-3.5 text-emerald-400" />
-          Draw Field (Agro)
-        </button>
-      ) : (
-        <div className="flex items-center gap-2 bg-slate-900/90 border border-emerald-500/50 p-1 px-3 rounded-full text-xs text-emerald-300 animate-pulse">
-          <MousePointerClick className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Click map corners to enclose field</span>
-          <button
-            onClick={handleCompleteDraw}
-            className="p-1 rounded bg-emerald-500 text-slate-950 font-bold hover:bg-emerald-400"
-            title="Complete Field Selection"
-          >
-            <Check className="w-3 h-3" />
-          </button>
-          <button
-            onClick={handleCancelDraw}
-            className="p-1 rounded bg-red-500/30 text-red-300 hover:bg-red-500/50"
-            title="Cancel"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
-      )}
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 8,
+      padding: '5px 12px', borderRadius: 20, fontSize: 12,
+      background: 'rgba(48,209,88,0.12)', border: '1px solid rgba(48,209,88,0.30)', color: '#30D158',
+    }}>
+      <MousePointerClick style={{ width: 12, height: 12 }} />
+      <span>Click map to draw</span>
+      <button onClick={handleComplete} style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#30D158', color: '#000', cursor: 'pointer', border: 'none', flexShrink: 0 }}>
+        <Check style={{ width: 10, height: 10 }} />
+      </button>
+      <button onClick={() => setIsDrawing(false)} style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,69,58,0.2)', color: '#FF453A', cursor: 'pointer', border: '1px solid rgba(255,69,58,0.3)', flexShrink: 0 }}>
+        <X style={{ width: 10, height: 10 }} />
+      </button>
     </div>
   );
 };

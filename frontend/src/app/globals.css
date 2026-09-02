@@ -1,72 +1,351 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+/* =====================================================================
+   METEONOVA — DESIGN SYSTEM
+   Inspired by Apple Maps · Uber · Mapbox · City Night Skylines
+   Dark, clean, high-contrast — map is the hero, UI floats above it.
+   ===================================================================== */
+
 :root {
-  --bg-dark: #070a14;
-  --panel-bg: rgba(13, 18, 38, 0.75);
-  --panel-border: rgba(255, 255, 255, 0.12);
-  --accent-cyan: #00f2ff;
-  --accent-blue: #3b82f6;
-  --accent-orange: #f97316;
-  --accent-red: #ef4444;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  /* ── Pure backgrounds ───────────────────────────────────────────── */
+  --page-bg:   #0A0A0C;
+
+  /* ── Glass surfaces — backdrop-blurred floating panels ──────────── */
+  --glass-1: rgba(18, 18, 22, 0.92);     /* primary panels */
+  --glass-2: rgba(28, 28, 34, 0.88);     /* elevated cards */
+  --glass-3: rgba(38, 38, 46, 0.90);     /* interactive elements */
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-border-md: rgba(255, 255, 255, 0.14);
+  --glass-border-str: rgba(255, 255, 255, 0.22);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  /* ── Text — Apple dark-mode scale ───────────────────────────────── */
+  --text-primary:   #FFFFFF;
+  --text-secondary: #8E8E93;
+  --text-tertiary:  #48484A;
+  --text-quartery:  #2C2C2E;
+
+  /* ── Apple system colors (dark mode variants) ───────────────────── */
+  --blue:   #0A84FF;
+  --green:  #30D158;
+  --red:    #FF453A;
+  --orange: #FF9F0A;
+  --yellow: #FFD60A;
+  --teal:   #5AC8FA;
+  --indigo: #5E5CE6;
+  --purple: #BF5AF2;
+
+  /* ── Semantic tints ──────────────────────────────────────────────── */
+  --blue-tint:   rgba(10, 132, 255, 0.14);
+  --blue-ring:   rgba(10, 132, 255, 0.32);
+  --green-tint:  rgba(48, 209, 88, 0.12);
+  --green-ring:  rgba(48, 209, 88, 0.28);
+  --red-tint:    rgba(255, 69, 58, 0.12);
+  --red-ring:    rgba(255, 69, 58, 0.28);
+  --orange-tint: rgba(255, 159, 10, 0.12);
+  --orange-ring: rgba(255, 159, 10, 0.28);
+  --teal-tint:   rgba(90, 200, 250, 0.12);
+  --teal-ring:   rgba(90, 200, 250, 0.28);
+  --indigo-tint: rgba(94, 92, 230, 0.12);
+  --indigo-ring: rgba(94, 92, 230, 0.28);
+  --purple-tint: rgba(191, 90, 242, 0.12);
+  --purple-ring: rgba(191, 90, 242, 0.28);
+  --yellow-tint: rgba(255, 214, 10, 0.12);
+  --yellow-ring: rgba(255, 214, 10, 0.28);
+
+  /* ── Shadows ─────────────────────────────────────────────────────── */
+  --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.40);
+  --shadow-md:  0 4px 20px rgba(0, 0, 0, 0.55);
+  --shadow-lg:  0 12px 40px rgba(0, 0, 0, 0.65);
+  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.75);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* =====================================================================
+   RESET
+   ===================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%; width: 100%; overflow: hidden;
+  background: var(--page-bg);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-  background-color: var(--bg-dark);
-  color: var(--text-main);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+/* =====================================================================
+   SCROLLBARS
+   ===================================================================== */
+::-webkit-scrollbar          { width: 3px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: rgba(255,255,255,0.12); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+
+/* =====================================================================
+   GLASS PANEL
+   The core primitive — frosted glass floating over the map.
+   ===================================================================== */
+.glass {
+  background: var(--glass-1);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md), var(--glass-highlight);
+}
+
+.glass-elevated {
+  background: var(--glass-2);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--glass-border-md);
+  box-shadow: var(--shadow-lg), var(--glass-highlight);
+}
+
+/* =====================================================================
+   LAYER FILTER PILLS — Apple Maps style
+   ===================================================================== */
+.layer-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 13px;
+  border-radius: 99px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; user-select: none; white-space: nowrap;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-3);
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+  letter-spacing: -0.01em;
+}
+.layer-pill:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--glass-border-md);
+  color: var(--text-primary);
+}
+
+/* Active layer pills — one per data type */
+.pill-blue   { background: var(--blue-tint);   border-color: var(--blue-ring);   color: var(--blue);   }
+.pill-orange { background: var(--orange-tint); border-color: var(--orange-ring); color: var(--orange); }
+.pill-teal   { background: var(--teal-tint);   border-color: var(--teal-ring);   color: var(--teal);   }
+.pill-indigo { background: var(--indigo-tint); border-color: var(--indigo-ring); color: var(--indigo); }
+.pill-purple { background: var(--purple-tint); border-color: var(--purple-ring); color: var(--purple); }
+.pill-green  { background: var(--green-tint);  border-color: var(--green-ring);  color: var(--green);  }
+.pill-red    { background: var(--red-tint);    border-color: var(--red-ring);    color: var(--red);    }
+.pill-yellow { background: var(--yellow-tint); border-color: var(--yellow-ring); color: var(--yellow); }
+
+.layer-pill.pill-blue:hover, .layer-pill.pill-blue   { background: var(--blue-tint); }
+.layer-pill.pill-orange:hover,.layer-pill.pill-orange{ background: var(--orange-tint); }
+.layer-pill.pill-teal:hover,  .layer-pill.pill-teal  { background: var(--teal-tint); }
+.layer-pill.pill-indigo:hover,.layer-pill.pill-indigo{ background: var(--indigo-tint); }
+.layer-pill.pill-purple:hover,.layer-pill.pill-purple{ background: var(--purple-tint); }
+.layer-pill.pill-green:hover, .layer-pill.pill-green { background: var(--green-tint); }
+.layer-pill.pill-red:hover,   .layer-pill.pill-red   { background: var(--red-tint); }
+.layer-pill.pill-yellow:hover,.layer-pill.pill-yellow{ background: var(--yellow-tint); }
+
+/* =====================================================================
+   BUTTONS
+   ===================================================================== */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  background: var(--blue); color: #fff; border: none;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: -0.01em;
+}
+.btn-primary:hover   { opacity: 0.88; }
+.btn-primary:active  { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* =====================================================================
+   CHAT INPUT
+   ===================================================================== */
+.chat-input-wrap {
+  background: var(--glass-3);
+  border: 1px solid var(--glass-border-md);
+  border-radius: 14px;
+  padding: 10px 12px 8px;
+  transition: border-color 0.15s;
+}
+.chat-input-wrap:focus-within {
+  border-color: rgba(10, 132, 255, 0.40);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.10);
+}
+.chat-textarea {
+  width: 100%; background: transparent;
+  border: none; outline: none;
+  font-size: 13px; font-family: inherit;
+  color: var(--text-primary);
+  resize: none; line-height: 1.5;
+  min-height: 20px; max-height: 120px;
+}
+.chat-textarea::placeholder { color: var(--text-tertiary); }
+
+/* =====================================================================
+   RANGE INPUT — Timeline scrubber
+   ===================================================================== */
+input[type='range'] {
+  -webkit-appearance: none; appearance: none;
+  height: 3px; border-radius: 99px;
+  background: rgba(255,255,255,0.12);
+  outline: none; cursor: pointer; width: 100%;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,0.15);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  transition: transform 0.1s;
+}
+input[type='range']::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type='range']::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; border: 2px solid rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+/* =====================================================================
+   BADGE
+   ===================================================================== */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 99px;
+  font-size: 10.5px; font-weight: 600;
+  border: 1px solid transparent;
+  letter-spacing: 0.01em;
+}
+.badge-green  { background: var(--green-tint);  color: var(--green);  border-color: var(--green-ring);  }
+.badge-red    { background: var(--red-tint);    color: var(--red);    border-color: var(--red-ring);    }
+.badge-blue   { background: var(--blue-tint);   color: var(--blue);   border-color: var(--blue-ring);   }
+.badge-muted  { background: rgba(255,255,255,0.06); color: var(--text-secondary); border-color: var(--glass-border); }
+
+/* =====================================================================
+   ANIMATIONS
+   ===================================================================== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes dot-blink {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.75); }
+  40%            { opacity: 1;   transform: scale(1); }
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.anim-fade-up  { animation: fadeUp 0.22s cubic-bezier(0.22,1,0.36,1) both; }
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  animation: live-pulse 2.5s ease-in-out infinite;
+}
+.thinking-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--text-secondary);
+  animation: dot-blink 1.3s ease-in-out infinite;
+}
+.thinking-dot:nth-child(2) { animation-delay: 0.18s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.36s; }
+
+/* =====================================================================
+   MAPLIBRE OVERRIDES — match glass aesthetic
+   ===================================================================== */
+.maplibregl-ctrl-group {
+  background: var(--glass-1) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border-md) !important;
+  border-radius: 12px !important;
   overflow: hidden;
-  height: 100vh;
-  width: 100vw;
+  box-shadow: var(--shadow-md) !important;
 }
+.maplibregl-ctrl-group button {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--glass-border) !important;
+  width: 36px !important; height: 36px !important;
+  transition: background 0.13s, color 0.13s !important;
+}
+.maplibregl-ctrl-group button:hover {
+  background: rgba(255,255,255,0.08) !important;
+  color: var(--text-primary) !important;
+}
+.maplibregl-ctrl-attrib {
+  background: var(--glass-1) !important;
+  backdrop-filter: blur(12px) !important;
+  color: var(--text-tertiary) !important;
+  font-size: 9.5px !important;
+  border-radius: 8px !important;
+  padding: 2px 8px !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.maplibregl-ctrl-attrib a { color: var(--text-secondary) !important; }
+.maplibregl-popup-content {
+  background: var(--glass-2) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border-md) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 14px 16px !important;
+  font-family: inherit !important;
+  font-size: 12.5px !important;
+}
+.maplibregl-popup-anchor-top    .maplibregl-popup-tip { border-bottom-color: var(--glass-2) !important; }
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color:    var(--glass-2) !important; }
 
-/* Glassmorphism panel utility */
-.glass-panel {
-  background: var(--panel-bg);
+/* =====================================================================
+   TV NEWS CHANNEL STYLE CITY WEATHER BADGES
+   ===================================================================== */
+.tv-city-badge {
+  padding: 6px 10px;
+  border-radius: 8px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--panel-border);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.60);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
 }
-
-.glass-pill {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 9999px;
-  color: var(--text-main);
+.tv-city-badge:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.80);
 }
-
-/* MapLibre popup customization */
-.maplibregl-popup-content {
-  background: var(--panel-bg) !important;
-  color: var(--text-main) !important;
-  border: 1px solid var(--panel-border) !important;
-  border-radius: 12px !important;
-  backdrop-filter: blur(12px) !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+.tv-badge-red {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.90), rgba(185, 28, 28, 0.92));
+  border-color: rgba(255, 100, 100, 0.5);
 }
-
-.maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--panel-bg) !important; }
-.maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--panel-bg) !important; }
-
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
+.tv-badge-orange {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.90), rgba(194, 65, 12, 0.92));
+  border-color: rgba(255, 160, 80, 0.5);
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+.tv-badge-blue {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.90), rgba(29, 78, 216, 0.92));
+  border-color: rgba(100, 160, 255, 0.5);
 }
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+.tv-badge-yellow {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.90), rgba(161, 98, 7, 0.92));
+  border-color: rgba(255, 220, 100, 0.5);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+.tv-badge-green {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.90), rgba(21, 128, 61, 0.92));
+  border-color: rgba(100, 240, 140, 0.5);
+}
+.tv-badge-purple {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.90), rgba(126, 34, 206, 0.92));
+  border-color: rgba(210, 140, 255, 0.5);
 }

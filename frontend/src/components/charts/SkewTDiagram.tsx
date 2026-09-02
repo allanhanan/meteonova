@@ -4,99 +4,63 @@ import { Plane, AlertTriangle } from 'lucide-react';
 
 interface SkewTDiagramProps {
   location?: string;
-  data?: {
-    cape?: number;
-    cin?: number;
-    lifted_index?: number;
-    flight_level?: string;
-    turbulence_risk?: string;
-  };
+  data?: { cape?: number; cin?: number; lifted_index?: number; flight_level?: string; turbulence_risk?: string };
 }
 
 export const SkewTDiagram: React.FC<SkewTDiagramProps> = ({
-  location = 'Delhi → Mumbai Corridor',
-  data = {
-    cape: 1850,
-    cin: -45,
-    lifted_index: -4.2,
-    flight_level: 'FL350',
-    turbulence_risk: 'Moderate Convective'
-  }
-}) => {
-  return (
-    <div className="mt-3 p-3.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2 text-cyan-400 font-semibold">
-          <Plane className="w-4 h-4 text-cyan-400" />
-          Aero-Met Sounding: {location}
-        </div>
-        <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
-          {data.flight_level || 'FL350'}
-        </span>
+  location = 'Delhi–Mumbai Corridor',
+  data = { cape: 1850, cin: -45, lifted_index: -4.2, flight_level: 'FL350', turbulence_risk: 'Moderate Convective' },
+}) => (
+  <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border-1)', borderLeft: '3px solid var(--accent)', borderRadius: 8, padding: '10px 12px', fontSize: 12 }}>
+    <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+      <div className="flex items-center gap-1.5">
+        <Plane style={{ width: 13, height: 13, color: 'var(--accent)' }} />
+        <span style={{ fontWeight: 600, color: 'var(--text-0)' }}>Aero-Met Sounding</span>
+        <span style={{ color: 'var(--text-2)', fontSize: 11 }}>· {location}</span>
       </div>
-
-      {/* Thermodynamic Indices Grid */}
-      <div className="grid grid-cols-3 gap-2 mb-3 bg-slate-950/60 p-2 rounded-lg text-center border border-slate-800">
-        <div>
-          <div className="text-[10px] text-slate-400">CAPE (J/kg)</div>
-          <div className="text-sm font-bold text-amber-400">{data.cape}</div>
-        </div>
-        <div>
-          <div className="text-[10px] text-slate-400">CIN (J/kg)</div>
-          <div className="text-sm font-bold text-blue-400">{data.cin}</div>
-        </div>
-        <div>
-          <div className="text-[10px] text-slate-400">Lifted Index</div>
-          <div className="text-sm font-bold text-red-400">{data.lifted_index}</div>
-        </div>
-      </div>
-
-      {/* Sounding Profile Canvas Representation */}
-      <div className="relative h-28 w-full bg-slate-950 border border-slate-800 rounded-lg p-2 flex flex-col justify-between overflow-hidden">
-        {/* Isobaric Pressure Lines */}
-        <div className="absolute inset-0 opacity-20 flex flex-col justify-between pointer-events-none p-1">
-          <div className="border-b border-dashed border-cyan-400 text-[8px] text-cyan-400">200 hPa</div>
-          <div className="border-b border-dashed border-cyan-400 text-[8px] text-cyan-400">500 hPa</div>
-          <div className="border-b border-dashed border-cyan-400 text-[8px] text-cyan-400">850 hPa</div>
-          <div className="border-b border-dashed border-cyan-400 text-[8px] text-cyan-400">1000 hPa</div>
-        </div>
-
-        {/* Temperature vs Dewpoint Curve SVG */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 100" preserveAspectRatio="none">
-          {/* Temperature Curve (Red) */}
-          <path
-            d="M 30,95 Q 60,60 110,40 T 170,10"
-            fill="none"
-            stroke="#ef4444"
-            strokeWidth="2.5"
-          />
-          {/* Dewpoint Curve (Green) */}
-          <path
-            d="M 20,95 Q 40,65 80,45 T 130,10"
-            fill="none"
-            stroke="#10b981"
-            strokeWidth="2"
-            strokeDasharray="3,3"
-          />
-          {/* CAPE Area Shading */}
-          <path
-            d="M 60,60 Q 90,45 110,40 L 80,45 Z"
-            fill="rgba(239, 68, 68, 0.25)"
-          />
-        </svg>
-
-        <div className="relative z-10 flex justify-between items-end text-[9px] text-slate-400">
-          <span className="text-emerald-400 font-mono">■ Dewpoint Td</span>
-          <span className="text-red-400 font-mono">■ Temp T</span>
-        </div>
-      </div>
-
-      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-300">
-        <span className="flex items-center gap-1 text-amber-300">
-          <AlertTriangle className="w-3.5 h-3.5" />
-          Turbulence Risk: {data.turbulence_risk}
-        </span>
-      </div>
+      <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: 'var(--amber)', background: 'var(--amber-bg)', border: '1px solid var(--amber-border)', padding: '1px 7px', borderRadius: 4 }}>
+        {data.flight_level}
+      </span>
     </div>
-  );
-};
+
+    {/* Indices */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5, marginBottom: 8 }}>
+      {[['CAPE', data.cape, 'J/kg', 'var(--amber)'], ['CIN', data.cin, 'J/kg', 'var(--accent)'], ['LI', data.lifted_index, '', 'var(--red)']].map(([l, v, u, c]) => (
+        <div key={String(l)} style={{ background: 'var(--surface-3)', borderRadius: 5, padding: '7px 8px', border: '1px solid var(--border-1)', textAlign: 'center' }}>
+          <p style={{ fontSize: 9.5, color: 'var(--text-2)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{l}</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: String(c), fontFamily: 'monospace' }}>{v}<span style={{ fontSize: 9, marginLeft: 2, color: 'var(--text-2)' }}>{u}</span></p>
+        </div>
+      ))}
+    </div>
+
+    {/* Sounding SVG */}
+    <div style={{ position: 'relative', height: 96, background: 'var(--surface-3)', borderRadius: 6, border: '1px solid var(--border-1)', overflow: 'hidden', marginBottom: 6 }}>
+      {/* Pressure lines */}
+      {[20, 50, 76].map((pct, i) => (
+        <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${pct}%`, borderTop: '1px dashed rgba(99,120,170,0.2)', display: 'flex', alignItems: 'center', paddingLeft: 4 }}>
+          <span style={{ fontSize: 8, color: 'var(--text-3)', fontFamily: 'monospace' }}>{['200', '500', '850'][i]} hPa</span>
+        </div>
+      ))}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 200 96" preserveAspectRatio="none">
+        {/* CAPE shading */}
+        <path d="M 60,55 Q 90,42 110,38 L 80,44 Z" fill="rgba(248,113,113,0.15)" />
+        {/* Temp curve */}
+        <path d="M 30,90 Q 65,58 110,38 T 175,10" fill="none" stroke="var(--red)" strokeWidth="2" opacity="0.85" />
+        {/* Dewpoint curve */}
+        <path d="M 20,90 Q 42,62 80,44 T 130,12" fill="none" stroke="var(--green)" strokeWidth="1.5" strokeDasharray="4,3" opacity="0.75" />
+      </svg>
+    </div>
+
+    <div className="flex items-center justify-between" style={{ fontSize: 10, color: 'var(--text-2)' }}>
+      <span style={{ color: 'var(--green)' }}>─ ─ Td Dewpoint</span>
+      <span style={{ color: 'var(--red)' }}>─── T Temperature</span>
+    </div>
+
+    {data.turbulence_risk && (
+      <div className="flex items-center gap-1.5" style={{ marginTop: 6, padding: '5px 8px', background: 'var(--amber-bg)', border: '1px solid var(--amber-border)', borderRadius: 5 }}>
+        <AlertTriangle style={{ width: 11, height: 11, color: 'var(--amber)' }} />
+        <span style={{ fontSize: 11, color: 'var(--amber)' }}>Turbulence risk: {data.turbulence_risk}</span>
+      </div>
+    )}
+  </div>
+);

@@ -1,21 +1,15 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "MeteoNova (WeatherGPT) — Generative Geospatial Digital Twin",
-  description: "Conversational AI for Weather Forecasting, Disaster Alerts, and Meteorological Intelligence",
+  title: 'MeteoNova — WeatherGPT Digital Twin',
+  description: 'Generative Geospatial Digital Twin for India Disaster Management — powered by Groq AI, Open-Meteo, and MapLibre GL.',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

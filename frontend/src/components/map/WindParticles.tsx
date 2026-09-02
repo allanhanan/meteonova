@@ -4,10 +4,10 @@ import React, { useEffect, useRef } from 'react';
 interface Particle {
   x: number;
   y: number;
-  age: number;
-  maxAge: number;
+  length: number;
   speed: number;
   angle: number;
+  alpha: number;
 }
 
 export const WindParticles: React.FC = () => {
@@ -30,51 +30,50 @@ export const WindParticles: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
 
-    // Initialize 250 particles flowing south-west to north-east (cyclonic flow in Bay of Bengal)
-    const particleCount = 200;
+    // 250 wind stream particles flowing across the map
+    const particleCount = 250;
     const particles: Particle[] = Array.from({ length: particleCount }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      age: Math.floor(Math.random() * 100),
-      maxAge: 80 + Math.random() * 60,
+      length: 15 + Math.random() * 25,
       speed: 1.5 + Math.random() * 2.5,
-      angle: (Math.PI / 4) + (Math.random() - 0.5) * 0.4
+      angle: (Math.PI / 4) + (Math.random() - 0.5) * 0.3, // SW to NE cyclone flow
+      alpha: 0.3 + Math.random() * 0.5,
     }));
 
     const render = () => {
-      // Semi-transparent fade effect for particle trails
-      ctx.fillStyle = 'rgba(7, 10, 20, 0.15)';
-      ctx.fillRect(0, 0, width, height);
+      // Clear transparent canvas every frame (do NOT fillRect dark background!)
+      ctx.clearRect(0, 0, width, height);
 
       particles.forEach((p) => {
-        p.age++;
-        if (p.age >= p.maxAge || p.x > width || p.y < 0 || p.x < 0 || p.y > height) {
-          p.x = Math.random() * width;
-          p.y = Math.random() * height;
-          p.age = 0;
-          p.maxAge = 80 + Math.random() * 60;
-        }
-
-        const dx = Math.cos(p.angle) * p.speed;
-        const dy = -Math.sin(p.angle) * p.speed;
+        const dx = Math.cos(p.angle) * p.length;
+        const dy = -Math.sin(p.angle) * p.length;
 
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x + dx, p.y + dy);
 
-        // Color coding by speed (cyan for moderate, orange/red for strong wind)
-        const alpha = 1 - p.age / p.maxAge;
         if (p.speed > 3.0) {
-          ctx.strokeStyle = `rgba(249, 115, 22, ${alpha})`;
+          ctx.strokeStyle = `rgba(255, 159, 10, ${p.alpha})`; // Orange stream
+          ctx.lineWidth = 1.8;
         } else {
-          ctx.strokeStyle = `rgba(0, 242, 255, ${alpha})`;
+          ctx.strokeStyle = `rgba(90, 200, 250, ${p.alpha})`; // Cyan stream
+          ctx.lineWidth = 1.2;
         }
 
-        ctx.lineWidth = p.speed > 3.0 ? 2 : 1.2;
+        ctx.lineCap = 'round';
         ctx.stroke();
 
-        p.x += dx;
-        p.y += dy;
+        // Move particle forward
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y -= Math.sin(p.angle) * p.speed;
+
+        // Reset particle if out of bounds
+        if (p.x > width + 50 || p.y < -50 || p.x < -50 || p.y > height + 50) {
+          p.x = Math.random() * width;
+          p.y = Math.random() * height;
+          p.alpha = 0.3 + Math.random() * 0.5;
+        }
       });
 
       animationFrameId = requestAnimationFrame(render);

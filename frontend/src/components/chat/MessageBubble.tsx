@@ -1,48 +1,47 @@
 'use client';
 import React from 'react';
 import { ChatMessage } from '@/lib/types';
-import { ToolCallCard } from './ToolCallCard';
-import { Bot, User } from 'lucide-react';
 
-interface MessageBubbleProps {
-  message: ChatMessage;
-}
+interface Props { message: ChatMessage; }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+export const MessageBubble: React.FC<Props> = ({ message }) => {
   const isUser = message.sender === 'user';
 
   return (
-    <div className={`flex gap-3 mb-4 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+    <div className="anim-fade-up" style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', marginBottom: 14, gap: 4 }}>
+
+      <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        {isUser ? 'You' : 'WeatherGPT'}
+      </span>
+
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-          isUser ? 'bg-blue-600 text-white' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-        }`}
+        style={{
+          maxWidth: '90%',
+          padding: '10px 14px',
+          borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+          fontSize: 13,
+          lineHeight: 1.6,
+          letterSpacing: '-0.005em',
+          color: 'var(--text-primary)',
+          ...(isUser
+            ? { background: 'var(--blue)', boxShadow: '0 2px 8px rgba(10,132,255,0.25)' }
+            : { background: 'var(--glass-3)', border: '1px solid var(--glass-border)' }
+          ),
+        }}
       >
-        {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+        {message.text}
       </div>
 
-      <div className={`max-w-[85%] ${isUser ? 'text-right' : 'text-left'}`}>
-        <div
-          className={`inline-block p-3 rounded-2xl text-xs sm:text-sm leading-relaxed ${
-            isUser
-              ? 'bg-blue-600/80 text-white rounded-tr-none'
-              : 'bg-slate-900/80 text-slate-100 border border-slate-700/60 rounded-tl-none'
-          }`}
-        >
-          {message.text}
+      {message.toolCalls?.length ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 6, background: 'var(--blue-tint)', border: '1px solid var(--blue-ring)' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--blue)' }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--blue)' }}>Spatial visualization active on map canvas</span>
         </div>
+      ) : null}
 
-        {/* Render associated tool calls as interactive cards */}
-        {message.toolCalls && message.toolCalls.length > 0 && (
-          <div className="mt-1 space-y-1">
-            {message.toolCalls.map((tc, idx) => (
-              <ToolCallCard key={idx} toolCall={tc} />
-            ))}
-          </div>
-        )}
-
-        <div className="text-[10px] text-slate-500 mt-1 px-1" suppressHydrationWarning>{message.timestamp}</div>
-      </div>
+      <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }} suppressHydrationWarning>
+        {message.timestamp}
+      </span>
     </div>
   );
 };
