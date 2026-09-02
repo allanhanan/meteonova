@@ -54,7 +54,14 @@ class AgentRouter:
             })
 
         # 2. Visual layer selection based on intent keywords
-        if any(k in query_lower for k in ["wind", "storm", "cyclone", "breeze", "vector", "jet"]):
+        if any(k in query_lower for k in ["spaghetti", "model compare", "gencast", "ensemble track", "trajectory"]):
+            tool_calls.append({
+                "name": "renderMapLayer",
+                "parameters": {"layer_type": "spaghetti_plots", "opacity": 0.9, "time_offset": "current"}
+            })
+            text_reply = "Rendering multi-model cyclone trajectory spaghetti plot. Comparing GFS (NOAA), ECMWF (IFS), and GenCast (DeepMind) 5-day ensemble track projections over the Bay of Bengal."
+
+        elif any(k in query_lower for k in ["wind", "storm", "cyclone", "breeze", "vector", "jet"]):
             tool_calls.append({
                 "name": "renderMapLayer",
                 "parameters": {"layer_type": "wind_particles", "opacity": 0.9, "time_offset": "current"}
@@ -114,6 +121,53 @@ class AgentRouter:
                 }
             })
             text_reply = f"Generated specialized agricultural advisory for {target_city.capitalize()}. Field soil moisture is optimal; hold chemical applications prior to forecasted midweek rain."
+            
+        elif any(k in query_lower for k in ["flight", "aviation", "pilot", "turbulence", "skew", "sounding"]):
+            tool_calls.append({
+                "name": "generateChart",
+                "parameters": {
+                    "chart_type": "skew_t",
+                    "title": f"Aero-Met Sounding: {target_city.capitalize()} Flight Corridor",
+                    "location": f"{target_city.capitalize()} Corridor",
+                    "data": {
+                        "cape": 1850,
+                        "cin": -45,
+                        "lifted_index": -4.2,
+                        "flight_level": "FL350",
+                        "turbulence_risk": "Moderate Convective"
+                    }
+                }
+            })
+            text_reply = f"Generated Skew-T Log-P thermodynamic sounding profile for the {target_city.capitalize()} corridor at FL350. Elevated CAPE (1850 J/kg) indicates moderate convective turbulence."
+            
+        elif any(k in query_lower for k in ["aqi", "air quality", "pm2.5", "pollution", "smog"]):
+            tool_calls.append({
+                "name": "renderMapLayer",
+                "parameters": {"layer_type": "aqi_circles", "opacity": 0.85, "time_offset": "current"}
+            })
+            tool_calls.append({
+                "name": "generateChart",
+                "parameters": {
+                    "chart_type": "aqi_breakdown",
+                    "title": f"Air Quality Breakdown: {target_city.capitalize()}",
+                    "location": target_city.capitalize(),
+                    "data": {
+                        "aqi": 342 if target_city == "delhi" else (158 if target_city == "mumbai" else 74),
+                        "status": "Hazardous / Severe" if target_city == "delhi" else "Unhealthy",
+                        "pm25": 184,
+                        "pm10": 312,
+                        "no2": 62
+                    }
+                }
+            })
+            text_reply = f"Displaying Air Quality Index (AQI) monitoring stations across India. {target_city.capitalize()} currently reporting AQI 342 (Hazardous) driven by PM2.5 concentrations."
+            
+        elif any(k in query_lower for k in ["isobar", "pressure", "synoptic", "low pressure", "hpa"]):
+            tool_calls.append({
+                "name": "renderMapLayer",
+                "parameters": {"layer_type": "pressure_isobars", "opacity": 0.85, "time_offset": "current"}
+            })
+            text_reply = "Rendering synoptic sea-level pressure isobar contours (1004 hPa - 1016 hPa) over India. Low-pressure system (998 hPa) identified over the Bay of Bengal."
             
         else:
             # Default weather fallback query

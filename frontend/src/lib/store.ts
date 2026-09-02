@@ -53,7 +53,7 @@ export const useAppStore = create<AppStore>((set) => ({
       id: 'welcome-1',
       sender: 'assistant',
       text: 'Namaste! I am WeatherGPT — your Generative Geospatial Digital Twin. Ask me about weather forecasts, storm warnings, heatwave risks, or agricultural advisories.',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: 'Just now'
     }
   ],
   isLoading: false,

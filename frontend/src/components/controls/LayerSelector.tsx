@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
 import { useAppStore } from '@/lib/store';
-import { Wind, Thermometer, CloudRain, ShieldAlert, Building2 } from 'lucide-react';
+import { Wind, Thermometer, CloudRain, ShieldAlert, Building2, GitBranch, Activity, Layers } from 'lucide-react';
+import { PolygonDraw } from '../map/PolygonDraw';
 
 export const LayerSelector: React.FC = () => {
   const { mapState, toggleLayer } = useAppStore();
@@ -11,11 +12,15 @@ export const LayerSelector: React.FC = () => {
     { id: 'heatmap_temp', label: 'Thermal Heatmap', icon: Thermometer, color: 'text-orange-400' },
     { id: 'heatmap_precip', label: 'Precipitation', icon: CloudRain, color: 'text-blue-400' },
     { id: 'flood_extrusion', label: '3D Flood Risk', icon: Building2, color: 'text-purple-400' },
+    { id: 'spaghetti_plots', label: 'Spaghetti Tracks', icon: GitBranch, color: 'text-pink-400' },
+    { id: 'aqi_circles', label: 'AQI Stations', icon: Activity, color: 'text-emerald-400' },
+    { id: 'pressure_isobars', label: 'Isobar Contours', icon: Layers, color: 'text-blue-300' },
     { id: 'alert_zones', label: 'Disaster Alerts', icon: ShieldAlert, color: 'text-red-400' }
   ];
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      <PolygonDraw />
       {layers.map((layer) => {
         const Icon = layer.icon;
         const isActive = mapState.activeLayers.includes(layer.id);

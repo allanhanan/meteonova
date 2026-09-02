@@ -3,6 +3,32 @@ import React, { useState } from 'react';
 import { Mic, MicOff } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
+interface SpeechRecognitionResultItem {
+  transcript: string;
+}
+
+interface SpeechRecognitionResultList {
+  [index: number]: {
+    [index: number]: SpeechRecognitionResultItem;
+  };
+}
+
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList;
+  error?: string;
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: () => void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionEvent) => void;
+  onend: () => void;
+  start: () => void;
+}
+
 interface VoiceButtonProps {
   onTranscript: (text: string) => void;
 }
@@ -12,7 +38,12 @@ export const VoiceButton: React.FC<VoiceButtonProps> = ({ onTranscript }) => {
   const { setVoiceActive } = useAppStore();
 
   const toggleListening = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    const win = window as unknown as Record<string, unknown>;
+    const SpeechRecognitionClass = (win.SpeechRecognition || win.webkitSpeechRecognition) as {
+      new (): SpeechRecognitionInstance;
+    } | undefined;
+
+    if (!SpeechRecognitionClass) {
       alert('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
       return;
     }
@@ -23,8 +54,7 @@ export const VoiceButton: React.FC<VoiceButtonProps> = ({ onTranscript }) => {
       return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognitionClass();
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = 'en-IN'; // Default to Indian English / Hindi capable
@@ -34,14 +64,14 @@ export const VoiceButton: React.FC<VoiceButtonProps> = ({ onTranscript }) => {
       setVoiceActive(true);
     };
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript;
       if (transcript) {
         onTranscript(transcript);
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionEvent) => {
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
       setVoiceActive(false);

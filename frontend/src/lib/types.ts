@@ -8,7 +8,7 @@ export interface MapState {
 
 export interface ToolCall {
   name: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export interface ChatMessage {
@@ -17,7 +17,7 @@ export interface ChatMessage {
   text: string;
   toolCalls?: ToolCall[];
   timestamp: string;
-  chartData?: any;
+  chartData?: Record<string, unknown>;
 }
 
 export interface WeatherData {
@@ -26,6 +26,6 @@ export interface WeatherData {
   humidity?: number;
   windSpeed?: number;
   condition?: string;
-  hourly?: any;
-  daily?: any;
+  hourly?: Record<string, unknown>;
+  daily?: Record<string, unknown>;
 }

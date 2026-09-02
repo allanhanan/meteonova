@@ -64,7 +64,7 @@ async def tts_endpoint(req: TTSRequest):
     audio_bytes = await ElevenLabsService.generate_speech(req.text, req.voice_id)
     if audio_bytes:
         return Response(content=audio_bytes, media_type="audio/mpeg")
-    raise HTTPException(status_code=500, detail="Failed to synthesize speech or API key missing")
+    return Response(status_code=204)
 
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):

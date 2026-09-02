@@ -5,7 +5,8 @@ import { useAppStore } from '@/lib/store';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { LayerSelector } from '@/components/controls/LayerSelector';
 import { TimelineSlider } from '@/components/controls/TimelineSlider';
-import { Sparkles, Globe, Shield, Volume2 } from 'lucide-react';
+import { Sparkles, Globe } from 'lucide-react';
+import { ToolCall } from '@/lib/types';
 
 const MapCanvas = dynamic(() => import('@/components/map/MapCanvas'), {
   ssr: false,
@@ -17,8 +18,19 @@ const MapCanvas = dynamic(() => import('@/components/map/MapCanvas'), {
   )
 });
 
+interface ToolCallPayload {
+  name: string;
+  parameters: {
+    lat?: number;
+    lon?: number;
+    zoom?: number;
+    pitch?: number;
+    location_name?: string;
+  };
+}
+
 export default function Home() {
-  const { addMessage, setLoading, setMapCamera, addMessage: addMsgStore } = useAppStore();
+  const { addMessage, setLoading, setMapCamera } = useAppStore();
 
   const handleSendMessage = async (query: string) => {
     // 1. Append user message to state
@@ -38,13 +50,15 @@ export default function Home() {
 
         // 3. Process Tool Calls (e.g. flyTo camera)
         if (data.tool_calls && data.tool_calls.length > 0) {
-          data.tool_calls.forEach((tc: any) => {
+          data.tool_calls.forEach((tc: ToolCallPayload) => {
             if (tc.name === 'flyTo' && tc.parameters) {
-              setMapCamera(
-                [tc.parameters.lon, tc.parameters.lat],
-                tc.parameters.zoom || 10,
-                tc.parameters.pitch || 45
-              );
+              if (tc.parameters.lat !== undefined && tc.parameters.lon !== undefined) {
+                setMapCamera(
+                  [tc.parameters.lon, tc.parameters.lat],
+                  tc.parameters.zoom || 10,
+                  tc.parameters.pitch || 45
+                );
+              }
             }
           });
         }
@@ -53,7 +67,7 @@ export default function Home() {
         addMessage({
           sender: 'assistant',
           text: data.reply || 'Analysis completed.',
-          toolCalls: data.tool_calls
+          toolCalls: data.tool_calls as ToolCall[]
         });
 
         // 5. Synthesize voice narration via ElevenLabs backend proxy (if available)
@@ -69,7 +83,7 @@ export default function Home() {
             const audio = new Audio(audioUrl);
             audio.play();
           }
-        } catch (e) {
+        } catch {
           // Speech synthesis optional fallback
         }
       } else {
@@ -78,7 +92,7 @@ export default function Home() {
           text: `Retrieved weather intelligence for query: "${query}". Visual layer updated.`
         });
       }
-    } catch (err) {
+    } catch {
       // Offline / Fallback handling
       addMessage({
         sender: 'assistant',

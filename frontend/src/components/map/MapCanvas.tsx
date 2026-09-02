@@ -1,12 +1,18 @@
 'use client';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useAppStore } from '@/lib/store';
+import { WindParticles } from './WindParticles';
+import { FloodExtrusion } from './FloodExtrusion';
+import { SpaghettiPlots } from './SpaghettiPlots';
+import { AQIMarkers } from './AQIMarkers';
+import { IsobarLayer } from './IsobarLayer';
 
 export const MapCanvas: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<maplibregl.Map | null>(null);
+  const [activeMap, setActiveMap] = useState<maplibregl.Map | null>(null);
   const { mapState } = useAppStore();
 
   useEffect(() => {
@@ -19,7 +25,11 @@ export const MapCanvas: React.FC = () => {
         sources: {
           'osm-tiles': {
             type: 'raster',
-            tiles: ['https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+            tiles: [
+              'https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png',
+              'https://b.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png',
+              'https://c.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png'
+            ],
             tileSize: 256,
             attribution: '&copy; CartoDB &copy; OpenStreetMap'
           }
@@ -88,6 +98,8 @@ export const MapCanvas: React.FC = () => {
           'line-dasharray': [2, 2]
         }
       });
+
+      setActiveMap(map);
     });
 
     mapInstance.current = map;
@@ -95,8 +107,9 @@ export const MapCanvas: React.FC = () => {
     return () => {
       map.remove();
       mapInstance.current = null;
+      setActiveMap(null);
     };
-  }, []);
+  }, [mapState.center, mapState.zoom, mapState.pitch, mapState.bearing]);
 
   useEffect(() => {
     if (!mapInstance.current) return;
@@ -110,7 +123,21 @@ export const MapCanvas: React.FC = () => {
     });
   }, [mapState.center, mapState.zoom, mapState.pitch, mapState.bearing]);
 
-  return <div ref={mapContainer} className="w-full h-full relative" />;
+  const isWindActive = mapState.activeLayers.includes('wind_particles');
+  const isFloodActive = mapState.activeLayers.includes('flood_extrusion');
+  const isSpaghettiActive = mapState.activeLayers.includes('spaghetti_plots');
+  const isAQIActive = mapState.activeLayers.includes('aqi_circles');
+  const isIsobarActive = mapState.activeLayers.includes('pressure_isobars');
+
+  return (
+    <div ref={mapContainer} className="w-full h-full relative overflow-hidden">
+      {isWindActive && <WindParticles />}
+      {isFloodActive && <FloodExtrusion map={activeMap} />}
+      {isSpaghettiActive && <SpaghettiPlots map={activeMap} />}
+      {isAQIActive && <AQIMarkers map={activeMap} />}
+      {isIsobarActive && <IsobarLayer map={activeMap} />}
+    </div>
+  );
 };
 
 export default MapCanvas;
