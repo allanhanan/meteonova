@@ -1,6 +1,14 @@
-import os
+from pathlib import Path
 from dotenv import load_dotenv
 
+# Try root .env, backend .env, or default fallback
+root_env = Path(__file__).resolve().parent.parent.parent / ".env"
+backend_env = Path(__file__).resolve().parent.parent / ".env"
+
+if root_env.exists():
+    load_dotenv(root_env)
+if backend_env.exists():
+    load_dotenv(backend_env)
 load_dotenv()
 
 class Settings:

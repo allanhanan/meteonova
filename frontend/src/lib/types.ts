@@ -4,6 +4,7 @@ export interface MapState {
   pitch: number;
   bearing: number;
   activeLayers: string[];
+  mapStyle: 'dark' | 'satellite' | 'light' | 'terrain' | 'esri_dark';
 }
 
 export interface ToolCall {

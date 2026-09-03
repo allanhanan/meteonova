@@ -91,8 +91,8 @@ export default function Home() {
           <span className="badge badge-muted">Beta</span>
         </div>
 
-        {/* Layer pill row */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', minWidth: 0, overflowX: 'auto' }}>
+        {/* Layer pill row — overflow visible so dropdowns can escape */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', minWidth: 0, overflow: 'visible', position: 'relative' }}>
           <LayerSelector />
         </div>
 

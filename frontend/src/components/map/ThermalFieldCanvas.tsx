@@ -145,14 +145,14 @@ export const ThermalFieldCanvas: React.FC<ThermalFieldCanvasProps> = ({ map }) =
               data[idx] = r;
               data[idx + 1] = g;
               data[idx + 2] = b;
-              data[idx + 3] = Math.round(a * 215);
+              data[idx + 3] = Math.round(a * 120);
             }
           }
 
           offCtx.putImageData(imgData, 0, 0);
 
           ctx.save();
-          ctx.globalAlpha = 0.88;
+          ctx.globalAlpha = 0.40;
           ctx.filter = 'blur(10px)';
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';

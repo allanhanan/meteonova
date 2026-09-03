@@ -8,6 +8,7 @@ interface AppStore {
   toggleLayer: (layerName: string) => void;
   enableLayer: (layerName: string) => void;
   setLayers: (layers: string[]) => void;
+  setMapStyle: (style: MapState['mapStyle']) => void;
 
   // Chat State
   messages: ChatMessage[];
@@ -42,6 +43,7 @@ export const useAppStore = create<AppStore>((set) => ({
       'pressure_isobars',
       'flood_extrusion',
     ],
+    mapStyle: 'dark',
   },
   setMapCamera: (center, zoom, pitch = 45, bearing = 0) =>
     set((state) => ({
@@ -66,6 +68,8 @@ export const useAppStore = create<AppStore>((set) => ({
     })),
   setLayers: (activeLayers) =>
     set((state) => ({ mapState: { ...state.mapState, activeLayers } })),
+  setMapStyle: (mapStyle) =>
+    set((state) => ({ mapState: { ...state.mapState, mapStyle } })),
 
   messages: [
     {

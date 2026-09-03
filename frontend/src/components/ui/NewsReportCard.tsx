@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Volume2, X, Wind, Droplets, Activity, ChevronRight, AlertTriangle, ShieldAlert, Thermometer, Layers } from 'lucide-react';
+import { Volume2, X, Wind, Droplets, Activity, ChevronRight } from 'lucide-react';
 
 export type ReportCategory = 'thermal' | 'aqi' | 'cyclone' | 'flood' | 'skew_t' | 'crop';
 
@@ -11,7 +11,7 @@ export interface PlaceReport {
   lng: number;
   temp: number;
   condition: string;
-  severity: 'Extreme Heat' | 'Red Alert' | 'Storm Warning' | 'Monsoon Watch' | 'Hazardous AQI' | 'Severe Flood' | 'Convective Risk';
+  severity: 'Extreme Heat' | 'Red Alert' | 'Storm Warning' | 'Monsoon Watch' | 'Hazardous AQI' | 'Severe Flood' | 'Convective Risk' | 'Pleasant';
   humidity: number;
   windSpeed: number;
   aqi: number;
@@ -214,7 +214,7 @@ export const NewsReportCard: React.FC<NewsReportCardProps> = ({ report, onClose 
             <div style={{ fontSize: 10, fontWeight: 700, color: '#ff3b30', textTransform: 'uppercase', marginBottom: 6 }}>
               HYDROLOGICAL 3D INUNDATION DEPTH
             </div>
-            <div style={{ display: 'flex', justify: 'space-between', fontSize: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
               <div>Inundation Rise: <strong style={{ color: '#ff3b30' }}>{report.floodDepthMeters || 2.4} meters</strong></div>
               <div>Submerged Assets: <strong style={{ color: '#ffea00' }}>{report.submergedBuildings || 42} buildings</strong></div>
             </div>

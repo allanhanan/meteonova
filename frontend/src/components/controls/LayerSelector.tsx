@@ -2,6 +2,7 @@
 import React from 'react';
 import { useAppStore } from '@/lib/store';
 import { Wind, Thermometer, CloudRain, ShieldAlert, Building2, GitBranch, Activity, Layers, Sprout } from 'lucide-react';
+import { MapStyleSelector } from './MapStyleSelector';
 
 const LAYERS = [
   { id: 'wind_particles',   label: 'Wind',          icon: Wind,        pill: 'pill-teal'   },
@@ -19,6 +20,8 @@ export const LayerSelector: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
+      <MapStyleSelector />
+
       {/* Draw field pill */}
       <button className="layer-pill pill-green">
         <Sprout style={{ width: 12, height: 12 }} />

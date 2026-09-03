@@ -13,29 +13,78 @@ import { AQIMarkers } from './AQIMarkers';
 import { PolygonDraw } from './PolygonDraw';
 import { NewsReportCard, PlaceReport } from '../ui/NewsReportCard';
 
-// ── Clean, High-Contrast Esri Dark Basemap Style ────────────────────────────
-const DARK_MAP_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-  sources: {
-    esri: {
-      type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],
-      tileSize: 256,
-      attribution: '&copy; Esri',
-    },
-  },
-  layers: [
-    {
-      id: 'esri-base',
-      type: 'raster',
-      source: 'esri',
-      paint: {
-        'raster-brightness-max': 0.65,
-        'raster-contrast': 0.45,
+// ── Dynamic Map Style Specifications (pure raster — no glyphs needed) ─────────
+export const MAP_STYLES: Record<string, maplibregl.StyleSpecification> = {
+  dark: {
+    version: 8,
+    sources: {
+      carto: {
+        type: 'raster',
+        tiles: [
+          'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        ],
+        tileSize: 256,
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
       },
     },
-  ],
+    layers: [{ id: 'carto-dark-base', type: 'raster', source: 'carto', minzoom: 0, maxzoom: 20 }],
+  },
+  satellite: {
+    version: 8,
+    sources: {
+      esri_sat: {
+        type: 'raster',
+        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        tileSize: 256,
+        attribution: '&copy; Esri World Imagery',
+      },
+    },
+    layers: [{ id: 'esri-sat-base', type: 'raster', source: 'esri_sat', minzoom: 0, maxzoom: 20 }],
+  },
+  light: {
+    version: 8,
+    sources: {
+      carto_light: {
+        type: 'raster',
+        tiles: [
+          'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+          'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+          'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+          'https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+        ],
+        tileSize: 256,
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+      },
+    },
+    layers: [{ id: 'carto-light-base', type: 'raster', source: 'carto_light', minzoom: 0, maxzoom: 20 }],
+  },
+  terrain: {
+    version: 8,
+    sources: {
+      esri_topo: {
+        type: 'raster',
+        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],
+        tileSize: 256,
+        attribution: '&copy; Esri Topo',
+      },
+    },
+    layers: [{ id: 'esri-topo-base', type: 'raster', source: 'esri_topo', minzoom: 0, maxzoom: 20 }],
+  },
+  esri_dark: {
+    version: 8,
+    sources: {
+      esri_dark_src: {
+        type: 'raster',
+        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],
+        tileSize: 256,
+        attribution: '&copy; Esri',
+      },
+    },
+    layers: [{ id: 'esri-dark-base', type: 'raster', source: 'esri_dark_src', minzoom: 0, maxzoom: 20 }],
+  },
 };
 
 export const MapCanvas: React.FC = () => {
@@ -46,6 +95,7 @@ export const MapCanvas: React.FC = () => {
   const [newsReport, setNewsReport] = useState<PlaceReport | null>(null);
 
   const activeLayers = useAppStore((s) => s.mapState.activeLayers);
+  const selectedMapStyle = useAppStore((s) => s.mapState.mapStyle);
   const mapCenter = useAppStore((s) => s.mapState.center);
   const mapZoom = useAppStore((s) => s.mapState.zoom);
   const mapPitch = useAppStore((s) => s.mapState.pitch);
@@ -55,14 +105,16 @@ export const MapCanvas: React.FC = () => {
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
+    const initialStyle = MAP_STYLES[selectedMapStyle] || MAP_STYLES['dark'];
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: DARK_MAP_STYLE,
+      style: initialStyle,
       center: [78.9629, 20.5937],
       zoom: 4.8,
       pitch: 0,
       bearing: 0,
     });
+    mapRef.current = map;
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-left');
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-left');
@@ -307,6 +359,14 @@ export const MapCanvas: React.FC = () => {
     });
   }, [mapCenter, mapZoom, mapPitch, mapBearing]);
 
+  // ── Dynamic style switching — runs whenever user picks a new style ───────────
+  // activeMap is React state (set after map.on('load')), so it's a valid dep.
+  useEffect(() => {
+    if (!activeMap) return;
+    const styleSpec = MAP_STYLES[selectedMapStyle] || MAP_STYLES['dark'];
+    activeMap.setStyle(styleSpec);
+  }, [activeMap, selectedMapStyle]);
+
   const windActive = activeLayers.includes('wind_particles');
   const floodActive = activeLayers.includes('flood_extrusion');
   const cycloneActive = activeLayers.includes('spaghetti_plots');
@@ -315,8 +375,8 @@ export const MapCanvas: React.FC = () => {
   const drawActive = activeLayers.includes('draw_field');
 
   return (
-    <div style={{ position: 'absolute', inset: 0 }}>
-      <div ref={mapContainer} style={{ position: 'absolute', inset: 0 }} />
+    <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'hidden' }}>
+      <div ref={mapContainer} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
       <ThermalFieldCanvas map={activeMap} />
       <PrecipitationFieldCanvas map={activeMap} />
       {windActive && <WindParticles />}
